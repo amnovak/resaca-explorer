@@ -58,10 +58,10 @@ html, body, #map {
   }
 
   .btn-group button {
-  background-color: #4CAF50;
+  background-color: inherit;
   border: 1px solid green;
   color: white; /* White text */
-  padding: 8px 6px;
+  padding: 2px 2px;
   font-size: 10px;
   font-family: "HelveticaNeue-Thin", Helvetica, sans-serif;
   cursor: pointer; /* Pointer/hand icon */
@@ -113,8 +113,8 @@ html, body, #map {
 
  div#viz_selector {
    position: absolute;
-   top: 200px;
-   right: 60px;
+   top: 20px;
+   right: 120px;
    z-index: 300006;
  }
 
@@ -133,3 +133,46 @@ html, body, #map {
    background-color: transparent;
    text-decoration: underline;
  }
+
+
+/* From ramiro aznar */
+#legend {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  height: auto;
+  width: auto;
+  padding: 20px 24px;
+  background: white;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  opacity: 0.7;
+  z-index: 1;
+  display: block;
+  list-style-type: none;
+  z-index: 999;
+}
+#legend h1 {
+  font: 800 12px/16px 'HelveticaNeue-Thin';
+  color: #2D3C43;
+  margin-bottom: 12px;
+}
+#legend-content{
+  font: 800 10px/14px 'HelveticaNeue-Thin';
+  margin-bottom: 6px;
+}
+#legend-content > li {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+#legend-content > li:last-child {
+  margin-bottom: 0;
+}
+.circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+}

@@ -13,7 +13,7 @@ var mapboxLight = L.tileLayer('https://api.mapbox.com/styles/v1/amnovak/cjj8peqw
 });
 
 
-// Add baselayer to map
+// Add baselayers to map
 mapboxSatStreets.addTo(map);
 //mapboxLight.addTo(map);
 
@@ -30,8 +30,6 @@ const connectionStructures = new carto.source.Dataset(`connectionstructures`);
 const drainStructures = new carto.source.Dataset(`drainage`);
 
 
-
-
 // create variables for styles
 const systemStyle = new carto.style.CartoCSS($("#systems").text());
 const waterStyle = new carto.style.CartoCSS($("#waterDepth").text());
@@ -39,7 +37,6 @@ const sedStyle = new carto.style.CartoCSS($("#sedimentDepth").text());
 
 // Variable to store selected visualization. Initialize as systemStyle
 const resacaStyle = new carto.style.CartoCSS(systemStyle.getContent());
-
 
 // cartoCSS styles for other layers
 const connectionStyle = new carto.style.CartoCSS(`
@@ -205,7 +202,45 @@ function highlightSegment(short_code) {
   // control for clicked/not featureClicked
 }
 
-/** Listen to event thrown when polygon is clicked */
+
+//add legend elements (code adapted from Ramiro Aznar: https://bl.ocks.org/ramiroaznar/8c055a821e3446d8a4f11656402de705 )
+
+allResacas.on('metadataChanged', renderLegend);
+
+function renderLegend(metadata){
+  console.log(metadata);
+  metadata.styles.forEach(function (styleMetadata) {
+
+    if (styleMetadata.getType() == 'categories') {
+     if (styleMetadata.getProperty() == 'polygon-fill') {
+      let categories = styleMetadata.getCategories();
+      console.log(categories)
+      var content = '';
+      for (category of categories){
+        content += `<li><div class="circle" style="background:${category.value}"></div> ${category.name}</li>`;
+      }
+      document.getElementById('legend-content').innerHTML = content;
+    }
+  }
+
+  if (styleMetadata.getType() == 'buckets') {
+    if (styleMetadata.getProperty() == 'polygon-fill') {
+      let buckets = styleMetadata.getBuckets();
+      console.log(buckets);
+      var content = '';
+      for (bucket of buckets){
+        content += `<li><div class="circle" style="background:${bucket.value}"></div> ${bucket.min} - ${bucket.max} ft</li>`;
+      }
+      console.log(content);
+      document.getElementById('legend-content').innerHTML = content;
+    }
+  }
+
+  });
+}
+
+
+/** update infowindow when a feature is clicked */
 allResacas.on('featureClicked', openPopup);
 drains.on('featureClicked', openDrain);
 connections.on('featureClicked', openDrain);
