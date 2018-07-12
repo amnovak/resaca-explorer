@@ -58,21 +58,22 @@
       </li>
     </ul>
   </div>
+  <p> Choose a visualization: </p>
   <!-- button group -->
   <div class="btn-group" style="width:100%">
-    <button onclick="setwaterDepth()" style="width:33.3%">Water depth</button>
     <button onclick="setDefault()" style="width:33.3%">System</button>
+    <button onclick="setwaterDepth()" style="width:33.3%">Water depth</button>
     <button onclick="setsedDepth()" style="width:33.3%">Sediment depth</button>
   </div>
 
-<!-- drop down menu selector -->
+<!-- drop down menu selector
   <div id="viz_selector">
     <select id="visualization">
       <option value='waterdepth'>Water depth</option>
       <option value='system'>System</option>
       <option value='seddepth'>Sediment depth</option>
     </select>
-  </div>
+  </div> -->
 
 </div>
 
@@ -98,6 +99,190 @@ function openTab(evt, tabName) {
     evt.currentTarget.className += " active";
 }
 </script>
+
+<!-- CartoCSS for the resaca systems visualization -->
+<style type="cartocss/html" id="systems">
+   @TR: #8CE826;
+   @RRV: #08FFD2;
+   @RDLF: #FF8B19;
+   @RDLC: #CC3A67;
+   @RDLG: #0038CF;
+   #layer {
+     line-width: 2;
+     polygon-opacity: 0.2;
+     [system="TR"] {
+       polygon-fill: @TR;
+       line-color: @TR;
+     }
+     [system="RRV"] {
+       polygon-fill: @RRV;
+       line-color: @RRV;
+     }
+     [system="RDLF"] {
+       polygon-fill: @RDLF;
+       line-color: @RDLF;
+     }
+     [system="RDLC"] {
+       polygon-fill: @RDLC;
+       line-color: @RDLC;
+     }
+     [system="RDLG"] {
+       polygon-fill: @RDLG;
+       line-color: @RDLG;
+     }
+     ::labels [zoom>=13] {
+      text-name: [short_code];
+      text-face-name: 'DejaVu Sans Book';
+      text-size: 10;
+      text-fill: #FFFFFF;
+      text-label-position-tolerance: 0;
+      text-halo-radius: 1;
+      text-dy: -10;
+      text-allow-overlap: true;
+      text-placement: point;
+      text-placement-type: dummy;
+      [system="TR"] {
+        text-halo-fill: @TR;
+      }
+      [system="RRV"] {
+        text-halo-fill: @RRV;
+      }
+      [system="RDLC"] {
+        text-halo-fill: @RDLC;
+      }
+      [system="RDLG"] {
+        text-halo-fill: @RDLG;
+      }
+      [system="RDLF"] {
+        text-halo-fill: @RDLF;
+      }
+   }
+}
+</style>
+
+<!-- CartoCSS for the water depth visualization -->
+<style type="cartocss/html" id="waterDepth">
+@four: #0033cc;
+@three: #1a53ff;
+@two: #668cff;
+@one: #99b3ff;
+@nodata: #d3d3d3;
+
+#layer {
+  line-width: 2;
+  polygon-opacity: 0.2;
+
+  [waterdpth_round <= 7] {
+    polygon-fill: @four;
+    line-color: @four;
+  }
+  [waterdpth_round <= 5] {
+    polygon-fill: @three;
+    line-color: @three;
+  }
+  [waterdpth_round <= 3] {
+    polygon-fill: @two;
+    line-color: @two;
+  }
+  [waterdpth_round <= 1] {
+    polygon-fill: @one;
+    line-color: @one;
+  }
+  [waterdpth_round = 0] {
+    polygon-fill: @nodata;
+    line-color: @nodata;
+  }
+  ::labels [zoom>=13] {
+   text-name: [short_code];
+   text-face-name: 'DejaVu Sans Book';
+   text-size: 10;
+   text-fill: #FFFFFF;
+   text-label-position-tolerance: 0;
+   text-halo-radius: 1;
+   text-dy: -10;
+   text-allow-overlap: true;
+   text-placement: point;
+   text-placement-type: dummy;
+   [waterdpth_round <= 7] {
+     text-halo-fill: @four;
+   }
+   [waterdpth_round <= 5] {
+     text-halo-fill: @three;
+   }
+   [waterdpth_round <= 3] {
+     text-halo-fill: @two;
+   }
+   [waterdpth_round <= 1] {
+     text-halo-fill: @one;
+   }
+   [waterdpth_round = 0] {
+     text-halo-fill: @nodata;
+   }
+}
+}
+</style>
+
+<!-- CartoCSS for the sediment depth visualization -->
+<style type="cartocss/html" id="sedimentDepth">
+@four: #ff9900;
+@three: #ffb84d;
+@two: #ffd699;
+@one: #ffebcc;
+@nodata: #d3d3d3;
+
+#layer {
+  line-width: 2;
+  polygon-opacity: 0.2;
+
+  [seddpth_round <= 4] {
+    polygon-fill: @four;
+    line-color: @four;
+  }
+  [seddpth_round <= 3] {
+    polygon-fill: @three;
+    line-color: @three;
+  }
+  [seddpth_round <= 2] {
+    polygon-fill: @two;
+    line-color: @two;
+  }
+  [seddpth_round <= 1] {
+    polygon-fill: @one;
+    line-color: @one;
+  }
+  [seddpth_round = 0] {
+    polygon-fill: @nodata;
+    line-color: @nodata;
+  }
+  ::labels [zoom>=13] {
+   text-name: [short_code];
+   text-face-name: 'DejaVu Sans Book';
+   text-size: 10;
+   text-fill: #FFFFFF;
+   text-label-position-tolerance: 0;
+   text-halo-radius: 1;
+   text-dy: -10;
+   text-allow-overlap: true;
+   text-placement: point;
+   text-placement-type: dummy;
+   [waterdpth_round <= 7] {
+     text-halo-fill: @four;
+   }
+   [waterdpth_round <= 5] {
+     text-halo-fill: @three;
+   }
+   [waterdpth_round <= 3] {
+     text-halo-fill: @two;
+   }
+   [waterdpth_round <= 1] {
+     text-halo-fill: @one;
+   }
+   [waterdpth_round = 0] {
+     text-halo-fill: @nodata;
+   }
+}
+}
+</style>
 
 
 <!-- Include main Javascript file (all the map code) -->

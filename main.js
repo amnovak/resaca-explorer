@@ -30,204 +30,25 @@ const connectionStructures = new carto.source.Dataset(`connectionstructures`);
 const drainStructures = new carto.source.Dataset(`drainage`);
 
 
-// CartoCSS Styles for layers
-// Style for resaca visualization based on system ID
-const systemStyle = new carto.style.CartoCSS(`
-   @TR: #8CE826;
-   @RRV: #08FFD2;
-   @RDLF: #FF8B19;
-   @RDLC: #CC3A67;
-   @RDLG: #0038CF;
-   #layer {
-     line-width: 2;
-     polygon-opacity: 0.2;
-     [system="TR"] {
-       polygon-fill: @TR;
-       line-color: @TR;
-     }
-     [system="RRV"] {
-       polygon-fill: @RRV;
-       line-color: @RRV;
-     }
-     [system="RDLF"] {
-       polygon-fill: @RDLF;
-       line-color: @RDLF;
-     }
-     [system="RDLC"] {
-       polygon-fill: @RDLC;
-       line-color: @RDLC;
-     }
-     [system="RDLG"] {
-       polygon-fill: @RDLG;
-       line-color: @RDLG;
-     }
-     ::labels [zoom>=13] {
-      text-name: [short_code];
-      text-face-name: 'DejaVu Sans Book';
-      text-size: 10;
-      text-fill: #FFFFFF;
-      text-label-position-tolerance: 0;
-      text-halo-radius: 1;
-      text-dy: -10;
-      text-allow-overlap: true;
-      text-placement: point;
-      text-placement-type: dummy;
-      [system="TR"] {
-        text-halo-fill: @TR;
-      }
-      [system="RRV"] {
-        text-halo-fill: @RRV;
-      }
-      [system="RDLC"] {
-        text-halo-fill: @RDLC;
-      }
-      [system="RDLG"] {
-        text-halo-fill: @RDLG;
-      }
-      [system="RDLF"] {
-        text-halo-fill: @RDLF;
-      }
-   }
-}
-`);
-
-const waterDepth = new carto.style.CartoCSS(`
-   @four: #0033cc;
-   @three: #1a53ff;
-   @two: #668cff;
-   @one: #99b3ff;
-   @nodata: #d3d3d3;
-
-   #layer {
-     line-width: 2;
-     polygon-opacity: 0.2;
-
-     [waterdpth_round <= 7] {
-       polygon-fill: @four;
-       line-color: @four;
-     }
-     [waterdpth_round <= 5] {
-       polygon-fill: @three;
-       line-color: @three;
-     }
-     [waterdpth_round <= 3] {
-       polygon-fill: @two;
-       line-color: @two;
-     }
-     [waterdpth_round <= 1] {
-       polygon-fill: @one;
-       line-color: @one;
-     }
-     [waterdpth_round = 0] {
-       polygon-fill: @nodata;
-       line-color: @nodata;
-     }
-     ::labels [zoom>=13] {
-      text-name: [short_code];
-      text-face-name: 'DejaVu Sans Book';
-      text-size: 10;
-      text-fill: #FFFFFF;
-      text-label-position-tolerance: 0;
-      text-halo-radius: 1;
-      text-dy: -10;
-      text-allow-overlap: true;
-      text-placement: point;
-      text-placement-type: dummy;
-      [waterdpth_round <= 7] {
-        text-halo-fill: @four;
-      }
-      [waterdpth_round <= 5] {
-        text-halo-fill: @three;
-      }
-      [waterdpth_round <= 3] {
-        text-halo-fill: @two;
-      }
-      [waterdpth_round <= 1] {
-        text-halo-fill: @one;
-      }
-      [waterdpth_round = 0] {
-        text-halo-fill: @nodata;
-      }
-   }
-}
-`);
 
 
-const sedDepth = new carto.style.CartoCSS(`
-   @four: #ff9900;
-   @three: #ffb84d;
-   @two: #ffd699;
-   @one: #ffebcc;
-   @nodata: #d3d3d3;
+// create variables for styles
+const systemStyle = new carto.style.CartoCSS($("#systems").text());
+const waterStyle = new carto.style.CartoCSS($("#waterDepth").text());
+const sedStyle = new carto.style.CartoCSS($("#sedimentDepth").text());
 
-   #layer {
-     line-width: 2;
-     polygon-opacity: 0.2;
-
-     [seddpth_round <= 4] {
-       polygon-fill: @four;
-       line-color: @four;
-     }
-     [seddpth_round <= 3] {
-       polygon-fill: @three;
-       line-color: @three;
-     }
-     [seddpth_round <= 2] {
-       polygon-fill: @two;
-       line-color: @two;
-     }
-     [seddpth_round <= 1] {
-       polygon-fill: @one;
-       line-color: @one;
-     }
-     [seddpth_round = 0] {
-       polygon-fill: @nodata;
-       line-color: @nodata;
-     }
-     ::labels [zoom>=13] {
-      text-name: [short_code];
-      text-face-name: 'DejaVu Sans Book';
-      text-size: 10;
-      text-fill: #FFFFFF;
-      text-label-position-tolerance: 0;
-      text-halo-radius: 1;
-      text-dy: -10;
-      text-allow-overlap: true;
-      text-placement: point;
-      text-placement-type: dummy;
-      [waterdpth_round <= 7] {
-        text-halo-fill: @four;
-      }
-      [waterdpth_round <= 5] {
-        text-halo-fill: @three;
-      }
-      [waterdpth_round <= 3] {
-        text-halo-fill: @two;
-      }
-      [waterdpth_round <= 1] {
-        text-halo-fill: @one;
-      }
-      [waterdpth_round = 0] {
-        text-halo-fill: @nodata;
-      }
-   }
-}
-`);
-
-// Empty variable to store selected visualization (systemStyle, waterDepth, or sedDepth)
-const resacaStyle = new carto.style.CartoCSS(`
-`);
-
-// Initialize to systemStyle
-resacaStyle.setContent(systemStyle.getContent());
+// Variable to store selected visualization. Initialize as systemStyle
+const resacaStyle = new carto.style.CartoCSS(systemStyle.getContent());
 
 
+// cartoCSS styles for other layers
 const connectionStyle = new carto.style.CartoCSS(`
   #layer {
    marker-width: 7;
    marker-fill: #EE4D54;
  }
  `);
+
  const drainStyle = new carto.style.CartoCSS(`
    #layer {
     marker-width: 7;
@@ -335,9 +156,9 @@ function setConnections() {
   }
 }
 
-// Change style of allResacas layer based on selected visualization
+// Change style of allResacas layer based on selected visualization (buttons)
 function setwaterDepth() {
-  resacaStyle.setContent(waterDepth.getContent());
+  resacaStyle.setContent(waterStyle.getContent());
 }
 
 function setDefault() {
@@ -345,29 +166,29 @@ function setDefault() {
 }
 
 function setsedDepth() {
-  resacaStyle.setContent(sedDepth.getContent());
+  resacaStyle.setContent(sedStyle.getContent());
 }
 
 
-const selector = $(".viz_selector");
+
+// Add field selector
+const selector = $(".visualization")
 
 // change sql query with dropdown value
 selector.on('change', function(e) {
+  console.log("Menu changed");
   let value = e.target.value;
   console.log(value);
   if (value == 'waterdepth') {
-    resacaStyle.setContent(waterDepth.getContent());
+    resacaStyle.setContent(waterStyle.getContent());
   }
   if (value == 'seddepth') {
-    resacaStyle.setContent(sedDepth.getContent());
+    resacaStyle.setContent(sedStyle.getContent());
   }
   if (value == 'system') {
     resacaStyle.setContent(systemStyle.getContent());
   }
 });
-
-
-
 
 
 
