@@ -44,7 +44,7 @@ html, body, #map {
     display: none;
     position: fixed;
     width: 250px;
-    height: 250px;
+    height: 350px;
     right: 20px;
     top: 60px;
     padding: 10px;
