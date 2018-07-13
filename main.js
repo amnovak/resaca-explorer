@@ -229,15 +229,23 @@ function renderLegend(metadata){
       console.log(buckets);
       var content = '';
       for (bucket of buckets){
+         if (bucket.min == null) {
+           content += `<li><div class="circle" style="background:${bucket.value}"></div> No data </li>`;
+         }
+         else if (bucket.max == undefined) {
+         content += `<li><div class="circle" style="background:${bucket.value}"></div> > ${bucket.min} ft</li>`;
+       }
+      else {
         content += `<li><div class="circle" style="background:${bucket.value}"></div> ${bucket.min} - ${bucket.max} ft</li>`;
       }
+    }
       console.log(content);
       document.getElementById('legend-content').innerHTML = content;
     }
   }
 
   });
-}
+};
 
 
 /** update infowindow when a feature is clicked */

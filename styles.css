@@ -142,7 +142,7 @@ html, body, #map {
   left: 12px;
   height: auto;
   width: auto;
-  padding: 20px 24px;
+  padding: 10px 24px;
   background: white;
   box-shadow: 0 0 16px rgba(0, 0, 0, 0.12);
   border-radius: 4px;
@@ -153,12 +153,16 @@ html, body, #map {
   z-index: 999;
 }
 #legend h1 {
-  font: 800 12px/16px 'HelveticaNeue-Thin';
+  font-family: "HelveticaNeue-Thin", Helvetica, sans-serif;
+  /* font: 800 12px/16px 'HelveticaNeue-Thin'; */
+  font-size: 10px;
   color: #2D3C43;
   margin-bottom: 12px;
 }
 #legend-content{
-  font: 800 10px/14px 'HelveticaNeue-Thin';
+  font-family: "HelveticaNeue-Thin", Helvetica, sans-serif;
+  font-size: 10px;
+  /* font: 800 10px/14px 'HelveticaNeue-Thin'; */
   margin-bottom: 6px;
 }
 #legend-content > li {

@@ -55,20 +55,22 @@
 
   <div id="info"></div>
 
-  <div id="controls">
-    <ul style="list-style-type:none">
-      <li onclick="setConnections()">
-        <input type="checkbox" name="data" id="connections">
-        <label for="connections">Show hydraulic connection structures</label>
-      </li>
-    </ul>
-  </div>
   <p> Choose a visualization: </p>
   <!-- button group -->
   <div class="btn-group" style="width:100%">
     <button onclick="setDefault()" style="width:33.3%">System</button>
     <button onclick="setwaterDepth()" style="width:33.3%">Water depth</button>
     <button onclick="setsedDepth()" style="width:33.3%">Sediment depth</button>
+  </div>
+
+  <p> Add layers: </p>
+  <div id="controls">
+    <ul style="list-style-type:none">
+      <li onclick="setConnections()">
+        <input type="checkbox" name="data" id="connections">
+        <label for="connections">Hydraulic connection structures</label>
+      </li>
+    </ul>
   </div>
 
 <!-- drop down menu selector -->
@@ -157,8 +159,8 @@ $(function(){
 #layer {
   line-width: 2;
   polygon-opacity: 0.2;
-  polygon-fill: ramp([waterdpth_round], colorbrewer(Blues), jenks());
-  line-color: ramp([waterdpth_round], colorbrewer(Blues), jenks());
+  polygon-fill: ramp([waterdpth_round], (#d3d3d3, #b3d9ff, #4da6ff, #0073e6), (0.01,2,4,6), >=);
+  line-color: ramp([waterdpth_round], (#d3d3d3, #b3d9ff, #4da6ff, #0073e6), (0.01,2,4,6), >=);
 
   ::labels [zoom>=13] {
    text-name: [short_code];
@@ -171,7 +173,7 @@ $(function(){
    text-allow-overlap: true;
    text-placement: point;
    text-placement-type: dummy;
-   text-halo-fill: ramp([waterdpth_round], colorbrewer(Blues), jenks());
+   text-halo-fill: ramp([waterdpth_round], (#d3d3d3, #b3d9ff, #4da6ff, #0073e6), (0.01,2,4,6), >=);
   }
 }
 </style>
@@ -181,8 +183,8 @@ $(function(){
 #layer {
   line-width: 2;
   polygon-opacity: 0.2;
-  polygon-fill: ramp([seddpth_round], (#d3d3d3, #ffecb3, #ffd966, #ffbf00), jenks());
-  line-color: ramp([seddpth_round], (#d3d3d3, #ffecb3, #ffd966, #ffbf00), jenks());
+  polygon-fill: ramp([seddpth_round], (#d3d3d3, #ffecb3, #ffd966, #ffbf00), (0.01,1,2,3), >=);
+  line-color: ramp([seddpth_round], (#d3d3d3, #ffecb3, #ffd966, #ffbf00), (0.01,1,2,3), >=);
 
   ::labels [zoom>=13] {
    text-name: [short_code];
@@ -195,7 +197,7 @@ $(function(){
    text-allow-overlap: true;
    text-placement: point;
    text-placement-type: dummy;
-   text-halo-fill: ramp([seddpth_round], (#d3d3d3, #ffecb3, #ffd966, #ffbf00), jenks());
+   text-halo-fill: ramp([seddpth_round], (#d3d3d3, #ffecb3, #ffd966, #ffbf00), (0.01,1,2,3), >=);
   }
 }
 </style>
