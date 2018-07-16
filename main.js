@@ -44,7 +44,7 @@ const connectionStyle = new carto.style.CartoCSS(`
    marker-width: 7;
    marker-fill: #EE4D54;
 
-   [zoom>=13] {
+   [zoom>=12] {
      marker-width: 10;
    }
  }
@@ -55,7 +55,7 @@ const connectionStyle = new carto.style.CartoCSS(`
     marker-width: 7;
     marker-fill: yellow;
 
-    [zoom>=13] {
+    [zoom>=12] {
       marker-width: 10;
     }
   }
