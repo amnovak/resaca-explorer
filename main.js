@@ -75,7 +75,41 @@ const popup = L.popup({ closeButton: true});
 
 
 // Populate info window and open popup "label"
+// highlight selected feature on click (adapted from Ramiro Aznar: https://bl.ocks.org/oriolbx/9a81ae25e512abaf59d09dddbd8a6c24)
 function openPopup(featureEvent) {
+  // let polygon_selected = featureEvent.data.short_code;
+  //
+  // // call with CARTO SQL API the layer that we want to use,
+  //           // we get the boundaries of the polygons to highlight them when click
+  //           axios.get(`https://novakannaaa.carto.com/api/v2/sql?q=
+  //               SELECT ST_asGeoJSON(ST_Boundary(the_geom)) as geom
+  //               FROM all_resacas
+  //               WHERE short_code = ${polygon_selected}
+  //           `).then(function (response) {
+  //                   // save into geom the geometriea that come from CARTO
+  //                   let geom = response.data.rows[0].geom;
+  //                   // style
+  //                   let boundary = L.geoJson(JSON.parse(geom), {
+  //                       style: {
+  //                           color: "#000",
+  //                           weight: 5
+  //                       }
+  //                   });
+  //                   // add Leaflet layer to the map
+  //           map.addLayer(boundary);
+  //
+  //           // remove Leaflet layer after 2 seconds
+  //           setInterval(function(){
+  //           map.removeLayer(boundary)
+  //           }, 2000)
+  //         });
+  //
+  //         // add CARTO layer to the client
+  //         client.addLayer(cartoLayer);
+  //
+  //         // get tile from client and add them to the map object
+  //         client.getLeafletLayer().addTo(map);
+
   let content = '';
   content += `<div class="widget"><ul style="list-style-type:none">`;
   if (featureEvent.data.system == "TR") {
@@ -129,7 +163,7 @@ function openDrain(featureEvent) {
     content += `<li>${featureEvent.data.s_type}</li>`;
   }
   content += `</ul></div>`;
-  let pContent = `<h3>${featureEvent.data.s_no}</h3>`
+  let pContent = `<h3>${featureEvent.data.s_type}</h3>`
   popup.setContent(pContent);
   popup.setLatLng(featureEvent.latLng);
   if (!popup.isOpen()) {
@@ -212,15 +246,32 @@ function renderLegend(metadata){
   metadata.styles.forEach(function (styleMetadata) {
 
     if (styleMetadata.getType() == 'categories') {
-     if (styleMetadata.getProperty() == 'polygon-fill') {
-      let categories = styleMetadata.getCategories();
-      console.log(categories)
-      var content = '';
-      for (category of categories){
-        content += `<li><div class="circle" style="background:${category.value}"></div> ${category.name}</li>`;
+      if (styleMetadata.getProperty() == 'polygon-fill') {
+       let categories = styleMetadata.getCategories();
+       console.log(categories)
+       var content = '';
+       for (category of categories){
+         content += `<li><div class="circle" style="background:${category.value}"></div>`;
+         if (category.name == "RRV") {
+           content += `Resaca de Rancho Viejo`;
+         }
+         if (category.name == "RDLG") {
+           content += `Resaca de la Guerra`;
+         }
+         if (category.name == "RDLF") {
+           content += `Resaca de los Fresnos`;
+         }
+         if (category.name == "RDLC") {
+           content += `Resaca de los Cuates`;
+         }
+         if (category.name == "TR") {
+           content += `Town Resaca`;
+         }
+         content += `</li>`
+       }
+       document.getElementById('legend-content').innerHTML = content;
       }
-      document.getElementById('legend-content').innerHTML = content;
-    }
+
   }
 
   if (styleMetadata.getType() == 'buckets') {
@@ -246,6 +297,8 @@ function renderLegend(metadata){
 
   });
 };
+
+
 
 
 /** update infowindow when a feature is clicked */

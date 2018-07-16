@@ -21,6 +21,9 @@
 <!-- Include Carto.js library-->
 <script src="https://libs.cartocdn.com/carto.js/v4.0.8/carto.min.js"></script>
 
+<!-- Adding Axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
   <!-- Scripts for ESRI-Leaflet.js Geocoder library and style sheet-->
 <script src="https://unpkg.com/esri-leaflet@2.1.4"></script>
 <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@2.2.12/dist/esri-leaflet-geocoder.css">
@@ -38,7 +41,7 @@
 
 <!--legend -->
 <div id="legend">
-  <h1>Legend</h1>
+  <!-- <h1>Legend</h1> -->
   <div id="legend-content">
   </div>
 </div>
@@ -135,8 +138,8 @@ $(function(){
 #layer {
   line-width: 2;
   polygon-opacity: 0.2;
-  polygon-fill: ramp([system],(#8CE826, #08FFD2, #FF8B19, #CC3A67, #0038CF), category(5));
-  line-color: ramp([system],(#8CE826, #08FFD2, #FF8B19, #CC3A67, #0038CF), category(5));
+  polygon-fill: ramp([system],(#2da0ff, #FF8B19, #fc2d2d, #8CE826, #ff7ccd), category(5));
+  line-color: ramp([system],(#2da0ff, #FF8B19, #fc2d2d, #8CE826, #ff7ccd), category(5));
 
   ::labels [zoom>=13] {
    text-name: [short_code];
@@ -149,7 +152,7 @@ $(function(){
    text-allow-overlap: true;
    text-placement: point;
    text-placement-type: dummy;
-   text-halo-fill: ramp([system],(#8CE826, #08FFD2, #FF8B19, #CC3A67, #0038CF), category(5));
+   text-halo-fill: ramp([system],(#2da0ff, #FF8B19, #fc2d2d, #8CE826, #ff7ccd), category(5));
   }
 }
 </style>
