@@ -43,6 +43,10 @@ const connectionStyle = new carto.style.CartoCSS(`
   #layer {
    marker-width: 7;
    marker-fill: #EE4D54;
+
+   [zoom>=13] {
+     marker-width: 10;
+   }
  }
  `);
 
@@ -50,6 +54,10 @@ const connectionStyle = new carto.style.CartoCSS(`
    #layer {
     marker-width: 7;
     marker-fill: yellow;
+
+    [zoom>=13] {
+      marker-width: 10;
+    }
   }
   `);
 
