@@ -28,7 +28,7 @@ const client = new carto.Client({
 const all_resacas = new carto.source.Dataset(`all_resacas`);
 const connectionStructures = new carto.source.Dataset(`connectionstructures`);
 const drainStructures = new carto.source.Dataset(`drainage`);
-
+const subBasins = new carto.source.Dataset(`doc`);
 
 // create variables for styles
 const systemStyle = new carto.style.CartoCSS($("#systems").text());
@@ -38,6 +38,15 @@ const sedStyle = new carto.style.CartoCSS($("#sedimentDepth").text());
 // Variable to store selected visualization. Initialize as systemStyle
 const resacaStyle = new carto.style.CartoCSS(systemStyle.getContent());
 
+const basinStyle = new carto.style.CartoCSS(`
+  #layer {
+  line-width: 1;
+  polygon-fill: #FFFFFF;
+  polygon-opacity: 0;
+  line-color: #FFFFFF;
+}
+`);
+
 // cartoCSS styles for other layers
 const connectionStyle = new carto.style.CartoCSS(`
   #layer {
@@ -46,6 +55,10 @@ const connectionStyle = new carto.style.CartoCSS(`
 
    [zoom>=12] {
      marker-width: 10;
+   }
+
+   [zoom>=15] {
+     marker-width: 13;
    }
  }
  `);
@@ -58,13 +71,17 @@ const connectionStyle = new carto.style.CartoCSS(`
     [zoom>=12] {
       marker-width: 10;
     }
+
+    [zoom>=15] {
+      marker-width: 13;
+    }
   }
   `);
 
 
 // Create and add CARTO layers
 var allResacas = new carto.layer.Layer(all_resacas, resacaStyle, {
-  featureOverColumns: ['short_code', 'acres_round', 'waterdpth_round', 'seddpth_round', 'system']
+  featureOverColumns: ['short_code', 'acres_round', 'waterdpth_round', 'seddpth_round', 'system', 'avg_wtrdpt']
 });
 var connections = new carto.layer.Layer(connectionStructures, connectionStyle, {
   featureOverColumns: ['s_no', "s_type"]
@@ -72,10 +89,17 @@ var connections = new carto.layer.Layer(connectionStructures, connectionStyle, {
 var drains = new carto.layer.Layer(drainStructures, drainStyle, {
   featureOverColumns: ['s_no', "s_type"]
 });
-client.addLayers([allResacas, connections, drains]);
+var basins = new carto.layer.Layer(subBasins, basinStyle, {
+  featureOverColumns: ['name']
+});
+
+client.addLayers([basins, allResacas, connections, drains]);
 client.getLeafletLayer().addTo(map);
 connections.hide();
 drains.hide();
+basins.hide();
+
+
 
 
 // Leaflet popup
@@ -85,38 +109,6 @@ const popup = L.popup({ closeButton: true});
 // Populate info window and open popup "label"
 // highlight selected feature on click (adapted from Ramiro Aznar: https://bl.ocks.org/oriolbx/9a81ae25e512abaf59d09dddbd8a6c24)
 function openPopup(featureEvent) {
-  // let polygon_selected = featureEvent.data.short_code;
-  //
-  // // call with CARTO SQL API the layer that we want to use,
-  //           // we get the boundaries of the polygons to highlight them when click
-  //           axios.get(`https://novakannaaa.carto.com/api/v2/sql?q=
-  //               SELECT ST_asGeoJSON(ST_Boundary(the_geom)) as geom
-  //               FROM all_resacas
-  //               WHERE short_code = ${polygon_selected}
-  //           `).then(function (response) {
-  //                   // save into geom the geometriea that come from CARTO
-  //                   let geom = response.data.rows[0].geom;
-  //                   // style
-  //                   let boundary = L.geoJson(JSON.parse(geom), {
-  //                       style: {
-  //                           color: "#000",
-  //                           weight: 5
-  //                       }
-  //                   });
-  //                   // add Leaflet layer to the map
-  //           map.addLayer(boundary);
-  //
-  //           // remove Leaflet layer after 2 seconds
-  //           setInterval(function(){
-  //           map.removeLayer(boundary)
-  //           }, 2000)
-  //         });
-  //
-  //         // add CARTO layer to the client
-  //         client.addLayer(cartoLayer);
-  //
-  //         // get tile from client and add them to the map object
-  //         client.getLeafletLayer().addTo(map);
 
   let content = '';
   content += `<div class="widget"><ul style="list-style-type:none">`;
@@ -124,7 +116,7 @@ function openPopup(featureEvent) {
     content += `<li><h3>Town Resaca - `;
   }
   if (featureEvent.data.system == "RRV") {
-    content += `<li><h3>Resaca Rancho Viejo - `;
+    content += `<li><h3>Resaca de Rancho Viejo - `;
   }
   if (featureEvent.data.system == "RDLG") {
     content += `<li><h3>Resaca de la Guerra - `;
@@ -142,7 +134,7 @@ function openPopup(featureEvent) {
     content += `<li>Acres: ${featureEvent.data.acres_round}</li>`;
   }
   if (featureEvent.data.waterdpth_round) {
-    content += `<li>Average Water Depth: ${featureEvent.data.waterdpth_round} ft</li>`;
+    content += `<li>Average Water Depth:  ${featureEvent.data.waterdpth_round} ft</li>`;
   }
   if (featureEvent.data.seddpth_round){
     content += `<li>Average Sediment Depth: ${featureEvent.data.seddpth_round} ft</li>`;
@@ -157,6 +149,51 @@ function openPopup(featureEvent) {
     popup.openOn(map);
   }
   document.getElementById('info').innerHTML = content;
+
+
+// reset styling to remove previously highlighted features (?)
+
+
+//highlight selected feature
+  let selected_polygon = featureEvent.data.cartodb_id;
+
+// remove the highlight on the previously selected feature.
+  if(map.hasLayer(highlight)) {
+    console.log("has layer = true");
+    map.removeLayer(highlight);
+  }
+  else {
+    console.log("has layer = false");
+  // call with CARTO SQL API the layer that we want to use,
+            // we get the boundaries of the polygons to highlight them when click
+            axios.get(`https://novakannaaa.carto.com/api/v2/sql?q=SELECT ST_asGeoJSON(ST_Boundary(the_geom)) as geom
+                FROM all_resacas
+                WHERE cartodb_id = ${selected_polygon}
+            `).then(function (response) {
+                    // save into geom the geometry that came from CARTO
+                    let geom = response.data.rows[0].geom;
+                    // style
+                    let highlight = L.geoJson(JSON.parse(geom), {
+                        style: {
+                            color: "#FFF",
+                            weight: 1
+                        }
+                    });
+                    // add Leaflet layer to the map
+              map.addLayer(highlight);
+
+            // remove Leaflet layer after 3 seconds
+          //   setInterval(function(){
+          //   map.removeLayer(boundary)
+          // }, 3000)
+          // });
+});
+};
+          // // add CARTO layer to the client
+          // client.addLayer(cartoLayer);
+          //
+          // // get tile from client and add them to the map object
+          // client.getLeafletLayer().addTo(map);
 };
 
 
@@ -181,6 +218,22 @@ function openDrain(featureEvent) {
 };
 
 
+function openBasin(featureEvent) {
+  let content = '';
+  content += `<div class="widget"><ul style="list-style-type:none">`;
+  if (featureEvent.data.name) {
+    content += `<li>${featureEvent.data.name}</li>`;
+  }
+  content += `</ul></div>`;
+  popup.setContent(content);
+  popup.setLatLng(featureEvent.latLng);
+  if (!popup.isOpen()) {
+    popup.openOn(map);
+  }
+  document.getElementById('info').innerHTML = content;
+};
+
+
 // Add or remove hydraulic control structures layer
 function setConnections() {
   if (connections.isVisible()) {
@@ -193,7 +246,16 @@ function setConnections() {
   } else {
     drains.show()
   }
-}
+};
+
+// Add or remove basins layer
+function addBasins() {
+  if (basins.isVisible()) {
+    basins.hide()
+  } else {
+    basins.show()
+  }
+};
 
 // Change style of allResacas layer based on selected visualization (buttons)
 function setwaterDepth() {
@@ -236,13 +298,6 @@ selector.on('change', function(e) {
 //   console.log(`Mouse over resaca segment: ${featureEvent.data.short_code}`);
 // });
 
-
-/* highlight currently selected feature*/
-function highlightSegment(short_code) {
-  // identify feature in the Dataset
-  // create a copy with new style, replace original
-  // control for clicked/not featureClicked
-}
 
 
 //add legend elements (code adapted from Ramiro Aznar: https://bl.ocks.org/ramiroaznar/8c055a821e3446d8a4f11656402de705 )
@@ -308,11 +363,11 @@ function renderLegend(metadata){
 
 
 
-
-/** update infowindow when a feature is clicked */
+// update infowindow when a feature is clicked
 allResacas.on('featureClicked', openPopup);
 drains.on('featureClicked', openDrain);
 connections.on('featureClicked', openDrain);
+basins.on('featureClicked', openBasin);
 
 
 /** ESRI Geocoder search */
