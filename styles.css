@@ -53,13 +53,13 @@ html, body, #map {
     border-radius: 5px;
     color: #FFF;
     font-family: "HelveticaNeue-Thin", Helvetica, sans-serif;
-    font-size: 12px;
+    font-size: 11px;
     z-index: 200004;
   }
 
   .btn-group button {
   background-color: inherit;
-  border: 1px solid green;
+  border: 1px solid #00ffff;
   color: white; /* White text */
   padding: 2px 2px;
   font-size: 10px;
@@ -81,7 +81,7 @@ html, body, #map {
 
   /* Add a background color on hover */
   .btn-group button:hover {
-  background-color: #3e8e41;
+  background-color: #006666;
   }
 
  /* div#title {
@@ -119,12 +119,12 @@ html, body, #map {
  }
 
  #datalink:link {
-   color: green;
+   color: #00ffff;
    background-color: transparent;
    text-decoration: none;
  }
  #datalink:visited {
-   color: green;
+   color: #00ffff;
    background-color:transparent;
    text-decoration: none;
  }
