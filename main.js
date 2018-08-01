@@ -1,4 +1,4 @@
-var map = L.map('map').setView([26.10, -97.29], 10);
+var map = L.map('map').setView([26.10, -97.29], 11);
 
 // Variables to store basemap tiles
 var mapboxSatStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v9/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYW1ub3ZhayIsImEiOiJjamlrcnVqM3kwY3ZoM3ZteWVlYWEwMWdmIn0.KaCmpHIRa0GRQpUTIrRYwQ', {
@@ -21,6 +21,7 @@ const all_resacas = new carto.source.Dataset(`combined_aerial_1`);
 const hydroConnects1 = new carto.source.Dataset(`connectionstructures`);
 const hydroConnects2 = new carto.source.Dataset(`connectionstructures2`);
 const subBasins = new carto.source.Dataset(`doc`);
+const catchmentsLayer = new carto.source.Dataset('doc_2');
 
 // Create variables for CartoCSS styles (from index.html)
 const systemStyle = new carto.style.CartoCSS($("#systems").text());
@@ -33,10 +34,19 @@ const resacaStyle = new carto.style.CartoCSS(systemStyle.getContent());
 
 const basinStyle = new carto.style.CartoCSS(`
   #layer {
-  line-width: 1;
+  line-width: 3;
   polygon-fill: #FFFFFF;
   polygon-opacity: 0;
   line-color: #FFFFFF;
+}
+`);
+
+const catchmentStyle = new carto.style.CartoCSS(`
+  #layer {
+  line-width: 2;
+  polygon-fill: #FFFFFF;
+  polygon-opacity: 0;
+  line-color: #ffbf00;
 }
 `);
 
@@ -86,21 +96,22 @@ var basins = new carto.layer.Layer(subBasins, basinStyle, {
   featureOverColumns: ['name']
 });
 
-client.addLayers([basins, allResacas, connections, connections2]);
+var catchments = new carto.layer.Layer(catchmentsLayer, catchmentStyle);
+
+var highlight; //empty global to access the highlight layer
+
+client.addLayers([basins, catchments, allResacas, connections, connections2]);
 client.getLeafletLayer().addTo(map);
 
 // Hide the optional layers
 connections.hide();
 connections2.hide();
+catchments.hide();
 basins.hide();
-
 
 
 // Leaflet popup
 const popup = L.popup({ closeButton: true});
-
-
-var highlight;
 
 
 // Populate info window and open popup "label"
@@ -149,13 +160,8 @@ function openPopup(featureEvent) {
 
 
 
-
-// reset styling to remove previously highlighted features (?)
-
-
-//highlight selected feature
+//save id of feature clicked
   let selected_polygon = featureEvent.data.cartodb_id;
-
 
 //remove the highlight on the previously selected feature.
   if (highlight) {
@@ -164,34 +170,24 @@ function openPopup(featureEvent) {
   }
 
   // call with CARTO SQL API the layer that we want to use,
-            // we get the boundaries of the polygons to highlight them when click
+            // get the boundaries of the polygon clicked
             axios.get(`https://novakannaaa.carto.com/api/v2/sql?q=SELECT ST_asGeoJSON(ST_Boundary(the_geom)) as geom
                 FROM combined_aerial_1
                 WHERE cartodb_id = ${selected_polygon}
             `).then(function (response) {
 
-              // if (highlight) {
-              //   console.log("highlight true");
-              //   map.removeLayer(highlight);
-              // }
                     // save into geom the geometry that came from CARTO
                     var geom = response.data.rows[0].geom;
                     // style
                     highlight = L.geoJson(JSON.parse(geom), {
                         style: {
                             color: "#FFF",
-                            weight: 1
+                            weight: 2
                         }
                     });
-                    // add Leaflet layer to the map
+              // add Leaflet layer to the map
               map.addLayer(highlight);
-
 });
-          // // add CARTO layer to the client
-          // client.addLayer(cartoLayer);
-          //
-          // // get tile from client and add them to the map object
-          // client.getLeafletLayer().addTo(map);
 };
 
 
@@ -247,12 +243,21 @@ function setConnections() {
   }
 };
 
-// Add or remove basins layer
+// Add or remove watershed layer
 function addBasins() {
   if (basins.isVisible()) {
     basins.hide()
   } else {
     basins.show()
+  }
+};
+
+// Add or remove catchments layer
+function addCatchments() {
+  if(catchments.isVisible()) {
+    catchments.hide()
+  } else {
+    catchments.show()
   }
 };
 
