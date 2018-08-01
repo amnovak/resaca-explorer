@@ -6,17 +6,9 @@ var mapboxSatStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/sate
    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
    id: 'mapbox.streets',
 });
-var mapboxLight = L.tileLayer('https://api.mapbox.com/styles/v1/amnovak/cjj8peqwe3iml2so5jebaetz7/tiles/256/{z}/{x}/{y}?access_token=pk.eyJ1IjoiYW1ub3ZhayIsImEiOiJjamo4cGFheGEwMWN0M2tueDZ1eXF2ZHdhIn0.olgoZrTxhNGsdatptl4hrQ', {
-   maxZoom: 18,
-   attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-   id: 'mapbox.light',
-});
-
 
 // Add baselayers to map
 mapboxSatStreets.addTo(map);
-//mapboxLight.addTo(map);
-
 
 // Add CARTO client
 const client = new carto.Client({
@@ -24,19 +16,20 @@ const client = new carto.Client({
   username: 'novakannaaa'
 });
 
-// Load CARTO data tables
-const all_resacas = new carto.source.Dataset(`all_resacas`);
-const connectionStructures = new carto.source.Dataset(`connectionstructures`);
-const drainStructures = new carto.source.Dataset(`drainage`);
+// Load data tables from CARTO
+const all_resacas = new carto.source.Dataset(`combined_aerial_1`);
+const hydroConnects1 = new carto.source.Dataset(`connectionstructures`);
+const hydroConnects2 = new carto.source.Dataset(`connectionstructures2`);
 const subBasins = new carto.source.Dataset(`doc`);
 
-// create variables for styles
+// Create variables for CartoCSS styles (from index.html)
 const systemStyle = new carto.style.CartoCSS($("#systems").text());
 const waterStyle = new carto.style.CartoCSS($("#waterDepth").text());
 const sedStyle = new carto.style.CartoCSS($("#sedimentDepth").text());
 
-// Variable to store selected visualization. Initialize as systemStyle
+// Variable to store currently selected visualization. Initialize as systemStyle
 const resacaStyle = new carto.style.CartoCSS(systemStyle.getContent());
+
 
 const basinStyle = new carto.style.CartoCSS(`
   #layer {
@@ -48,7 +41,7 @@ const basinStyle = new carto.style.CartoCSS(`
 `);
 
 // cartoCSS styles for other layers
-const connectionStyle = new carto.style.CartoCSS(`
+const hcs1Style = new carto.style.CartoCSS(`
   #layer {
    marker-width: 7;
    marker-fill: #EE4D54;
@@ -63,7 +56,7 @@ const connectionStyle = new carto.style.CartoCSS(`
  }
  `);
 
- const drainStyle = new carto.style.CartoCSS(`
+ const hcs2Style = new carto.style.CartoCSS(`
    #layer {
     marker-width: 7;
     marker-fill: yellow;
@@ -79,26 +72,27 @@ const connectionStyle = new carto.style.CartoCSS(`
   `);
 
 
-// Create and add CARTO layers
+// Create CARTO layers and add to map
 var allResacas = new carto.layer.Layer(all_resacas, resacaStyle, {
-  featureOverColumns: ['short_code', 'acres_round', 'waterdpth_round', 'seddpth_round', 'system', 'avg_wtrdpt']
+  featureOverColumns: ['short_code', 'acres_round', 'water_depth', 'sed_height', 'system']
 });
-var connections = new carto.layer.Layer(connectionStructures, connectionStyle, {
+var connections = new carto.layer.Layer(hydroConnects1, hcs1Style, {
   featureOverColumns: ['s_no', "s_type"]
 });
-var drains = new carto.layer.Layer(drainStructures, drainStyle, {
+var connections2 = new carto.layer.Layer(hydroConnects2, hcs2Style, {
   featureOverColumns: ['s_no', "s_type"]
 });
 var basins = new carto.layer.Layer(subBasins, basinStyle, {
   featureOverColumns: ['name']
 });
 
-client.addLayers([basins, allResacas, connections, drains]);
+client.addLayers([basins, allResacas, connections, connections2]);
 client.getLeafletLayer().addTo(map);
-connections.hide();
-drains.hide();
-basins.hide();
 
+// Hide the optional layers
+connections.hide();
+connections2.hide();
+basins.hide();
 
 
 
@@ -106,8 +100,11 @@ basins.hide();
 const popup = L.popup({ closeButton: true});
 
 
+var highlight;
+
+
 // Populate info window and open popup "label"
-// highlight selected feature on click (adapted from Ramiro Aznar: https://bl.ocks.org/oriolbx/9a81ae25e512abaf59d09dddbd8a6c24)
+// highlight selected feature (adapted from Ramiro Aznar: https://bl.ocks.org/oriolbx/9a81ae25e512abaf59d09dddbd8a6c24)
 function openPopup(featureEvent) {
 
   let content = '';
@@ -133,15 +130,15 @@ function openPopup(featureEvent) {
   if (featureEvent.data.acres_round) {
     content += `<li>Acres: ${featureEvent.data.acres_round}</li>`;
   }
-  if (featureEvent.data.waterdpth_round) {
-    content += `<li>Average Water Depth:  ${featureEvent.data.waterdpth_round} ft</li>`;
+  if (featureEvent.data.water_depth) {
+    content += `<li>Average Water Depth: ${featureEvent.data.water_depth} ft</li>`;
   }
-  if (featureEvent.data.seddpth_round){
-    content += `<li>Average Sediment Depth: ${featureEvent.data.seddpth_round} ft</li>`;
+  if (featureEvent.data.sed_height){
+    content += `<li>Average Sediment Depth: ${featureEvent.data.sed_height} ft</li>`;
   }
   content += `</ul></div>`;
 
-  //label to identify selected feature (eventually replace with highlight)
+  //Popup label to identify selected feature
   let pContent = `<h3>${featureEvent.data.short_code}</h3>`
   popup.setContent(pContent);
   popup.setLatLng(featureEvent.latLng);
@@ -151,29 +148,36 @@ function openPopup(featureEvent) {
   document.getElementById('info').innerHTML = content;
 
 
+
+
 // reset styling to remove previously highlighted features (?)
 
 
 //highlight selected feature
   let selected_polygon = featureEvent.data.cartodb_id;
 
-// remove the highlight on the previously selected feature.
-  if(map.hasLayer(highlight)) {
+
+//remove the highlight on the previously selected feature.
+  if (highlight) {
     console.log("has layer = true");
     map.removeLayer(highlight);
   }
-  else {
-    console.log("has layer = false");
+
   // call with CARTO SQL API the layer that we want to use,
             // we get the boundaries of the polygons to highlight them when click
             axios.get(`https://novakannaaa.carto.com/api/v2/sql?q=SELECT ST_asGeoJSON(ST_Boundary(the_geom)) as geom
-                FROM all_resacas
+                FROM combined_aerial_1
                 WHERE cartodb_id = ${selected_polygon}
             `).then(function (response) {
+
+              // if (highlight) {
+              //   console.log("highlight true");
+              //   map.removeLayer(highlight);
+              // }
                     // save into geom the geometry that came from CARTO
-                    let geom = response.data.rows[0].geom;
+                    var geom = response.data.rows[0].geom;
                     // style
-                    let highlight = L.geoJson(JSON.parse(geom), {
+                    highlight = L.geoJson(JSON.parse(geom), {
                         style: {
                             color: "#FFF",
                             weight: 1
@@ -182,13 +186,7 @@ function openPopup(featureEvent) {
                     // add Leaflet layer to the map
               map.addLayer(highlight);
 
-            // remove Leaflet layer after 3 seconds
-          //   setInterval(function(){
-          //   map.removeLayer(boundary)
-          // }, 3000)
-          // });
 });
-};
           // // add CARTO layer to the client
           // client.addLayer(cartoLayer);
           //
@@ -218,6 +216,7 @@ function openDrain(featureEvent) {
 };
 
 
+
 function openBasin(featureEvent) {
   let content = '';
   content += `<div class="widget"><ul style="list-style-type:none">`;
@@ -241,10 +240,10 @@ function setConnections() {
   } else {
     connections.show()
   }
-  if (drains.isVisible()) {
-    drains.hide()
+  if (connections2.isVisible()) {
+    connections2.hide()
   } else {
-    drains.show()
+    connections2.show()
   }
 };
 
@@ -257,7 +256,8 @@ function addBasins() {
   }
 };
 
-// Change style of allResacas layer based on selected visualization (buttons)
+
+// Change style of resacas layer based on selected visualization
 function setwaterDepth() {
   resacaStyle.setContent(waterStyle.getContent());
 }
@@ -272,27 +272,6 @@ function setsedDepth() {
 
 
 
-// Add field selector
-const selector = $(".visualization")
-
-// change sql query with dropdown value
-selector.on('change', function(e) {
-  console.log("Menu changed");
-  let value = e.target.value;
-  console.log(value);
-  if (value == 'waterdepth') {
-    resacaStyle.setContent(waterStyle.getContent());
-  }
-  if (value == 'seddepth') {
-    resacaStyle.setContent(sedStyle.getContent());
-  }
-  if (value == 'system') {
-    resacaStyle.setContent(systemStyle.getContent());
-  }
-});
-
-
-
 /* Listen to event thrown when mouse is over a feature- create highlight function*/
 // TR.on('featureOver', featureEvent => {
 //   console.log(`Mouse over resaca segment: ${featureEvent.data.short_code}`);
@@ -300,18 +279,17 @@ selector.on('change', function(e) {
 
 
 
-//add legend elements (code adapted from Ramiro Aznar: https://bl.ocks.org/ramiroaznar/8c055a821e3446d8a4f11656402de705 )
-
+// Update legend when style is changed
 allResacas.on('metadataChanged', renderLegend);
 
-function renderLegend(metadata){
-  console.log(metadata);
-  metadata.styles.forEach(function (styleMetadata) {
 
-    if (styleMetadata.getType() == 'categories') {
+//Function to add legend elements
+//Code adapted from Ramiro Aznar: https://bl.ocks.org/ramiroaznar/8c055a821e3446d8a4f11656402de705
+function renderLegend(metadata){
+  metadata.styles.forEach(function (styleMetadata) {
+    if (styleMetadata.getType() == 'categories') {              // categorical legend
       if (styleMetadata.getProperty() == 'polygon-fill') {
        let categories = styleMetadata.getCategories();
-       console.log(categories)
        var content = '';
        for (category of categories){
          content += `<li><div class="circle" style="background:${category.value}"></div>`;
@@ -337,10 +315,9 @@ function renderLegend(metadata){
 
   }
 
-  if (styleMetadata.getType() == 'buckets') {
+  if (styleMetadata.getType() == 'buckets') {                // quantitative legend
     if (styleMetadata.getProperty() == 'polygon-fill') {
       let buckets = styleMetadata.getBuckets();
-      console.log(buckets);
       var content = '';
       for (bucket of buckets){
          if (bucket.min == null) {
@@ -353,7 +330,6 @@ function renderLegend(metadata){
         content += `<li><div class="circle" style="background:${bucket.value}"></div> ${bucket.min} - ${bucket.max} ft</li>`;
       }
     }
-      console.log(content);
       document.getElementById('legend-content').innerHTML = content;
     }
   }
@@ -362,10 +338,9 @@ function renderLegend(metadata){
 };
 
 
-
 // update infowindow when a feature is clicked
 allResacas.on('featureClicked', openPopup);
-drains.on('featureClicked', openDrain);
+connections2.on('featureClicked', openDrain);
 connections.on('featureClicked', openDrain);
 basins.on('featureClicked', openBasin);
 
